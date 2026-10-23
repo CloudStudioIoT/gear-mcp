@@ -23,7 +23,7 @@ All six are marked read-only (`readOnlyHint`) for clients that ask before runnin
 
 ## What you need
 
-- Node.js 18 or newer.
+- Node.js 20 or newer.
 - The URL of your Gear instance, for example `https://gear.cloud.studio` or your own domain.
 - A Gear **access token** for the user the assistant will act as. Ask your Gear administrator for:
   - an application with these API permissions: Accounts.Login, Accounts.Read, Facilities.Read,
