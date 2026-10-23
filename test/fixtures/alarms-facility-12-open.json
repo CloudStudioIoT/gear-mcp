@@ -1,0 +1,4 @@
+[
+ {"AlarmID":9001,"AlarmSeverityDescription":"High","AlarmSeverityID":3,"AlarmTypeDescription":"Temperature above limit","AlarmTypeID":1,"DateTimeClosed_UTC":null,"DateTimeCreated_UTC":"2026-10-02T08:10:00","Details":"-12.5 °C > -18 °C","DeviceDescription":"Freezer 2","DeviceID":502,"EndpointID":9502,"MTTRMinutes":null,"SequenceNumber":440001},
+ {"AlarmID":9002,"AlarmSeverityDescription":"Medium","AlarmSeverityID":2,"AlarmTypeDescription":"Device offline","AlarmTypeID":2,"DateTimeClosed_UTC":null,"DateTimeCreated_UTC":"2026-10-02T09:00:00","Details":"","DeviceDescription":"Freezer 2","DeviceID":502,"EndpointID":null,"MTTRMinutes":null,"SequenceNumber":440007}
+]

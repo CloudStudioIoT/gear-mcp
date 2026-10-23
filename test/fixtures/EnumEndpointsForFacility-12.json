@@ -1,0 +1,6 @@
+{"EnumEndpointsForFacilityResult":[
+ {"EndpointID":9501,"DeviceID":501,"Description":"Temperature","Hidden":false,"LastStatusDateTime":{"Date":{"Day":2,"Month":10,"Year":2026},"Time":{"Hour":14,"Millisecond":0,"Minute":6,"Second":40}}},
+ {"EndpointID":9503,"DeviceID":501,"Description":"Door","Hidden":false,"LastStatusDateTime":{"Date":{"Day":2,"Month":10,"Year":2026},"Time":{"Hour":11,"Millisecond":0,"Minute":20,"Second":0}}},
+ {"EndpointID":9511,"DeviceID":502,"Description":"Temperature","Hidden":false,"LastStatusDateTime":{"Date":{"Day":29,"Month":9,"Year":2026},"Time":{"Hour":16,"Millisecond":0,"Minute":40,"Second":0}}},
+ {"EndpointID":9521,"DeviceID":503,"Description":"Door","Hidden":false,"LastStatusDateTime":null}
+]}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CloudStudioIoT/gear-mcp",
+  "title": "Cloud Studio Gear",
+  "description": "Read-only access to a Cloud Studio Gear IoT account: sites, devices, live values, history and alarms.",
+  "websiteUrl": "https://cloudstudioiot.com",
+  "repository": { "url": "https://github.com/CloudStudioIoT/gear-mcp", "source": "github" },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@cloudstudioiot/gear-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "GEAR_URL", "description": "URL of your Gear instance, e.g. https://gear.cloud.studio", "isRequired": true, "format": "string" },
+        { "name": "GEAR_TOKEN", "description": "Gear access token of the user the assistant acts as", "isRequired": true, "isSecret": true, "format": "string" }
+      ]
+    }
+  ]
+}

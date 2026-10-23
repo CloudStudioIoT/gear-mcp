@@ -1,0 +1,93 @@
+{
+ "GetDeviceLiveDataResult": {
+  "Device": {
+   "Address": "70B3D57ED0051A2B",
+   "AlarmCount": 0,
+   "Batteries": [
+    {
+     "Percentage": 87,
+     "State": 0,
+     "Type": 1,
+     "Voltage": 3.6
+    },
+    {
+     "Percentage": 0,
+     "State": 0,
+     "Type": 1,
+     "Voltage": 3.15
+    }
+   ],
+   "Description": "Freezer 1",
+   "DeviceModel": {
+    "Description": "Tekelek TEK-811",
+    "DeviceModelID": 44,
+    "FirmwareVersion": "1.2",
+    "Thumbnail": null
+   },
+   "Endpoints": [
+    {
+     "Address": "1",
+     "Description": "Temperature",
+     "EndpointID": 9501,
+     "IconName": "f2c9",
+     "IsOn": false,
+     "IsOnline": true,
+     "NumericValue": -19.4,
+     "OperationSecurityLevel": 1,
+     "Type": 14,
+     "ValueString": "-19.4 °C",
+     "VariableType": 1
+    },
+    {
+     "Address": "2",
+     "Description": "Door",
+     "EndpointID": 9503,
+     "IconName": "f52b",
+     "IsOn": false,
+     "IsOnline": true,
+     "NumericValue": 0,
+     "OperationSecurityLevel": 1,
+     "Type": 20,
+     "ValueString": "Closed",
+     "VariableType": 8
+    },
+    {
+     "Address": "3",
+     "Description": "Parking spot",
+     "EndpointID": 9504,
+     "IconName": "f540",
+     "IsOn": false,
+     "IsOnline": true,
+     "NumericValue": 0,
+     "OperationSecurityLevel": 1,
+     "Type": 20,
+     "ValueString": "Vacant ",
+     "VariableType": 8
+    },
+    {
+     "Address": "4",
+     "Description": "Spare",
+     "EndpointID": 9505,
+     "IconName": "f540",
+     "IsOn": false,
+     "IsOnline": false,
+     "NumericValue": null,
+     "OperationSecurityLevel": 1,
+     "Type": 20,
+     "ValueString": " ",
+     "VariableType": 8
+    }
+   ],
+   "LastUpdate": "10/02/2026 16:06:40 - (UTC+02:00) Madrid",
+   "Latitude": 40.4168,
+   "Longitude": -3.7038,
+   "RSSIStatuses": []
+  },
+  "Facility": {
+   "Description": "Warehouse North",
+   "FacilityID": 12,
+   "Latitude": 40.4168,
+   "Longitude": -3.7038
+  }
+ }
+}

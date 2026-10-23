@@ -1,0 +1,4 @@
+{"EnumAccountFacilitiesResult":[
+ {"FacilityID":12,"ClientID":3,"Description":"Warehouse North","IsOnline":true,"Location":{"Latitude":40.4168,"Longitude":-3.7038},"TimeZoneID":95},
+ {"FacilityID":7,"ClientID":3,"Description":"Cold room A","IsOnline":false,"Location":{"Latitude":0,"Longitude":0},"TimeZoneID":95}
+]}

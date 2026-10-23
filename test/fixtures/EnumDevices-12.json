@@ -1,0 +1,5 @@
+{"EnumDevicesResult":[
+ {"DeviceID":501,"FacilityID":12,"ClientID":3,"Description":"Freezer 1","DeviceModel":"TEK-811","Address":"70B3D57ED0051A2B","SerialNumber":"SN-0001","IsOnline":true,"FirmwareVersion":"1.2"},
+ {"DeviceID":502,"FacilityID":12,"ClientID":3,"Description":"Freezer 2","DeviceModel":"TEK-811","Address":"70B3D57ED0051A2C","SerialNumber":"SN-0002","IsOnline":false,"FirmwareVersion":"1.2"},
+ {"DeviceID":503,"FacilityID":12,"ClientID":3,"Description":"Door sensor","DeviceModel":"LDS02","Address":"A84041000181C2E1","SerialNumber":"","IsOnline":true,"FirmwareVersion":""}
+]}

@@ -1,0 +1,55 @@
+{
+  "name": "@cloudstudioiot/gear-mcp",
+  "version": "0.1.0",
+  "description": "Read-only MCP server for the Cloud Studio Gear IoT platform: facilities, devices, live values, history and alarms.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "iot",
+    "gear",
+    "cloud-studio",
+    "claude",
+    "lorawan",
+    "telemetry"
+  ],
+  "homepage": "https://github.com/CloudStudioIoT/gear-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/CloudStudioIoT/gear-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CloudStudioIoT/gear-mcp.git"
+  },
+  "license": "MIT",
+  "author": "Cloud Studio IoT, S.L. (https://cloudstudioiot.com)",
+  "mcpName": "io.github.CloudStudioIoT/gear-mcp",
+  "type": "module",
+  "bin": {
+    "gear-mcp": "dist/src/index.js"
+  },
+  "main": "dist/src/index.js",
+  "files": [
+    "dist/src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/index.js",
+    "start:http": "node dist/src/index.js --http",
+    "test": "tsc -p tsconfig.json && node --test dist/test/*.test.js",
+    "test:isolation": "tsc -p tsconfig.json && node dist/test/isolation/check.js",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0"
+  }
+}
