@@ -1,5 +1,6 @@
 /**
- * Minimal Gear API client: Service API (WCF, POST with a wrapped JSON body) and REST v2 (GET).
+ * Minimal Gear API client: Service API (WCF, POST with a wrapped JSON body) and REST v2 (GET, and POST for the
+ * optional write tools).
  *
  * Every call carries the user's access token, so this client sees exactly what that user sees in Gear:
  * permissions are enforced by the instance, not here. Reference: https://github.com/CloudStudioIoT/gear-api-skill.
@@ -83,6 +84,16 @@ export class GearClient {
     const res = await this.fetchImpl(`${this.baseUrl}/api/v2/${path}${q ? '?' + q : ''}`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+    return (await GearClient.parse(res)) as T;
+  }
+
+  /** REST v2: POST /api/v2/{path} with a JSON body. Only the write tools use it, and only when they are switched on. */
+  async restPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
+    const res = await this.fetchImpl(`${this.baseUrl}/api/v2/${path}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${this.accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
     return (await GearClient.parse(res)) as T;
   }
