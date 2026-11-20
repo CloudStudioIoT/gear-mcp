@@ -12,7 +12,7 @@ async function connected(routes: Parameters<typeof fakeGear>[0]) {
   const { gear } = fakeGear(routes);
   const [a, b] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'test', version: '0' });
-  await Promise.all([buildServer(gear).connect(a), client.connect(b)]);
+  await Promise.all([buildServer(gear, '0', { allowClaim: false, allowCommands: false }).connect(a), client.connect(b)]);
   return client;
 }
 

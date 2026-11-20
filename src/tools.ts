@@ -263,6 +263,73 @@ export async function findDevices(gear: GearClient, query: string, facilityId?: 
   };
 }
 
+/* ---- Write tools: off unless switched on by environment variable (see writeOptionsFromEnv). ---- */
+
+interface ClaimResult { Outcome?: string; DeviceID?: number | null; BlockedMinutes?: number | null }
+interface CommandResponse { ResponseType?: number; ErrorCode?: string | number | null; ErrorMessage?: string | null; ResponseData?: string | null }
+
+/** Which write tools this server registers. Both off by default: without them the server only reads. */
+export interface WriteOptions { allowClaim: boolean; allowCommands: boolean }
+
+/** GEAR_MCP_ALLOW_CLAIM=1 and GEAR_MCP_ALLOW_COMMANDS=1 switch the write tools on; anything else leaves them off. */
+export function writeOptionsFromEnv(env: Record<string, string | undefined> = process.env): WriteOptions {
+  const on = (v: string | undefined) => (v ?? '').trim() === '1';
+  return { allowClaim: on(env.GEAR_MCP_ALLOW_CLAIM), allowCommands: on(env.GEAR_MCP_ALLOW_COMMANDS) };
+}
+
+/**
+ * Claims a device from a manufacturer's inventory into a facility (POST /api/v2/deviceInventory/claim). Gear checks
+ * the Devices.Create API permission, the right to create devices in that facility and the Core.DeviceClaiming add-on.
+ * A rejected claim does not say why (unknown serial, wrong code or already claimed), and five rejections in fifteen
+ * minutes block the account for an hour: the outcome is passed on as Gear gives it.
+ */
+export async function claimDevice(gear: GearClient, facilityId: number, serialNumber: string, claimCode: string,
+  address?: string, description?: string) {
+  const r = await gear.restPost<ClaimResult>('deviceInventory/claim', {
+    FacilityID: facilityId, SerialNumber: serialNumber.trim(), ClaimCode: claimCode.trim(),
+    Address: address?.trim() || null, Description: description?.trim() || null,
+  });
+  return {
+    outcome: r?.Outcome ?? null,
+    device_id: r?.DeviceID ?? null,
+    blocked_minutes: r?.BlockedMinutes ?? null,
+    facility_id: facilityId,
+  };
+}
+
+export type CommandAction = 'on' | 'off' | 'toggle' | 'custom';
+const ON_OFF: Record<string, number> = { on: 0, off: 1, toggle: 2 };
+const RESPONSE = ['success', 'error', 'unsupported'];
+
+/**
+ * Sends a command to one endpoint (CommandService.ExecuteCommand). Gear checks Devices.Operate and that the user can
+ * operate that endpoint. Radio devices apply many commands at their next uplink: success means accepted.
+ */
+export async function sendCommand(gear: GearClient, deviceId: number, endpointId: number, action: CommandAction,
+  commandId?: number, commandData?: string, password?: string, timeoutSeconds = 30) {
+  let typed: Record<string, unknown>;
+  if (action === 'custom') {
+    if (!commandId) throw new GearError('INPUT', 'command_id is required for a custom command', 0);
+    typed = { Custom: { CommandID: commandId, CommandData: commandData ?? '' } };
+  } else {
+    typed = { OnOff: { CommandType: ON_OFF[action] } };
+  }
+  const r = await gear.service<CommandResponse>('core/CommandService', 'ExecuteCommand', {
+    command: { DeviceID: deviceId, EndpointID: endpointId, ...typed },
+    timeoutSeconds,
+    password: password || null,
+  });
+  return {
+    device_id: deviceId,
+    endpoint_id: endpointId,
+    action,
+    result: RESPONSE[r?.ResponseType ?? -1] ?? 'unknown',
+    error_code: r?.ErrorCode ?? null,
+    error_message: r?.ErrorMessage || null,
+    response: r?.ResponseData || null,
+  };
+}
+
 function ok(value: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(value) }] };
 }
@@ -280,12 +347,17 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: t
 const isoDate = z.string().describe('UTC date, "2026-10-01" or "2026-10-01T08:00:00Z"');
 
 /** Builds an MCP server whose tools all use this Gear client (and so this user's permissions). */
-export function buildServer(gear: GearClient, version = '0.1.0'): McpServer {
+export function buildServer(gear: GearClient, version = '0.1.0', write: WriteOptions = writeOptionsFromEnv()): McpServer {
+  const writes = [write.allowClaim ? 'claim_device claims a device into a facility' : '',
+    write.allowCommands ? 'send_command switches real equipment' : ''].filter(Boolean);
   const server = new McpServer({ name: 'gear', version }, {
     instructions:
-      'Read-only access to a Cloud Studio Gear IoT account. Hierarchy: client > facility > device > endpoint ' +
+      (writes.length ? 'Access to a Cloud Studio Gear IoT account. ' : 'Read-only access to a Cloud Studio Gear IoT account. ') +
+      'Hierarchy: client > facility > device > endpoint ' +
       '(an endpoint is one variable of a device, e.g. a temperature). Start with list_facilities, then list_devices, ' +
-      'get_device for live values, get_endpoint_history for trends and list_alarms for alarms. Times are UTC.',
+      'get_device for live values, get_endpoint_history for trends and list_alarms for alarms. Times are UTC.' +
+      (writes.length ? ' Write tools: ' + writes.join('; ') + '. Always confirm with the user before calling them, ' +
+        'naming the facility, device, endpoint and action.' : ''),
   });
 
   server.registerTool('list_facilities', {
@@ -354,6 +426,41 @@ export function buildServer(gear: GearClient, version = '0.1.0'): McpServer {
     },
     annotations: readOnly,
   }, (a) => run(() => findDevices(gear, a.query, a.facility_id)));
+
+  if (write.allowClaim) {
+    server.registerTool('claim_device', {
+      title: 'Claim a device into a facility',
+      description: 'Claims a device from its manufacturer\'s inventory into a facility, with its serial number and claim code. ' +
+        'Outcome: Claimed (with device_id), Rejected (no reason given) or Blocked (too many rejections; wait blocked_minutes). ' +
+        'Needs the Devices.Create permission and the right to create devices in that facility. Confirm with the user first.',
+      inputSchema: {
+        facility_id: z.number().int().positive(),
+        serial_number: z.string().min(1).max(100),
+        claim_code: z.string().min(1).max(100),
+        address: z.string().max(100).optional().describe('Network address (DevEUI, IMEI...); default: the serial number'),
+        description: z.string().max(200).optional().describe('Name of the device in Gear'),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    }, (a) => run(() => claimDevice(gear, a.facility_id, a.serial_number, a.claim_code, a.address, a.description)));
+  }
+
+  if (write.allowCommands) {
+    server.registerTool('send_command', {
+      title: 'Send a command to an endpoint',
+      description: 'Switches real equipment: on, off or toggle an endpoint, or a custom command of its device model. ' +
+        'Always confirm with the user first, naming the device, endpoint and action. Radio devices may apply it at their next uplink. ' +
+        'Needs the Devices.Operate permission on that endpoint.',
+      inputSchema: {
+        device_id: z.number().int().positive(),
+        endpoint_id: z.number().int().positive(),
+        action: z.enum(['on', 'off', 'toggle', 'custom']),
+        command_id: z.number().int().positive().optional().describe('Only for action custom'),
+        command_data: z.string().max(1000).optional().describe('Only for action custom'),
+        password: z.string().optional().describe('Only for endpoints that ask the user to retype the password'),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+    }, (a) => run(() => sendCommand(gear, a.device_id, a.endpoint_id, a.action, a.command_id, a.command_data, a.password)));
+  }
 
   return server;
 }

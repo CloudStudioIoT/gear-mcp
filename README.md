@@ -5,8 +5,10 @@ platform. It lets Claude, ChatGPT, Cursor, VS Code or any other MCP client read 
 devices and their status, live values, history and alarms. Ask *"which freezers in the Madrid warehouse
 have been offline since yesterday?"* and the assistant finds out on its own.
 
-It only reads. No tool sends commands to devices or changes configuration, and every call to Gear carries
-the user's own access token, so the assistant sees exactly what that user sees in Gear and nothing else.
+By default it only reads: no tool claims devices, sends commands or changes configuration. Two optional write
+tools exist, each off until you switch it on (see [Write tools](#write-tools-off-by-default)). Every call to Gear
+carries the user's own access token, so the assistant sees and does exactly what that user can in Gear and nothing
+else.
 
 ## Tools
 
@@ -20,6 +22,23 @@ the user's own access token, so the assistant sees exactly what that user sees i
 | `find_devices` | Where is the device called "freezer 3", with address 70B3D57E… or serial SN-0042? |
 
 All six are marked read-only (`readOnlyHint`) for clients that ask before running a tool.
+
+### Write tools (off by default)
+
+| Tool | Switched on by | What it does |
+|------|----------------|--------------|
+| `claim_device` | `GEAR_MCP_ALLOW_CLAIM=1` | Claims a device from its manufacturer's inventory into a site, with its serial number and claim code. |
+| `send_command` | `GEAR_MCP_ALLOW_COMMANDS=1` | Turns an endpoint on, off or toggles it, or sends a custom command of its device model. **It switches real equipment.** |
+
+Without the variable the tool is not registered at all: it does not appear in the tool list. Only the value `1`
+switches one on. Both are marked as not read-only, and `send_command` as destructive, so clients that ask before
+running a tool will ask; the server also tells the assistant to confirm with the user first.
+
+Gear decides whether each call is allowed, with the user's token: `claim_device` needs the Devices.Create API
+permission, the right to create devices in that site and the Core.DeviceClaiming add-on on the instance;
+`send_command` needs Devices.Operate and the right to operate that endpoint. A claim answers `Claimed` (with the new
+`device_id`), `Rejected` (Gear does not say why) or `Blocked`: five rejected claims in fifteen minutes block the
+account for an hour. Many radio devices apply a command at their next uplink, so `success` means *accepted*.
 
 ## What you need
 
@@ -139,14 +158,17 @@ Cloud Studio does not host a public instance of this server.
 git clone https://github.com/CloudStudioIoT/gear-mcp
 cd gear-mcp
 npm install
-npm test          # 25 tests against recorded response shapes, no network
+npm test          # 34 tests against recorded response shapes, no network
 npm run build
 GEAR_URL=... GEAR_TOKEN=... node dist/src/index.js
 ```
 
 `npm run test:isolation` checks, against a real instance, that two users of different clients each see only
 their own data in all six tools, also when one passes the other's IDs by hand. It needs `GEAR_URL`,
-`GEAR_TOKEN_A` and `GEAR_TOKEN_B`, and only reads.
+`GEAR_TOKEN_A` and `GEAR_TOKEN_B`, and only reads. With `GEAR_MCP_ALLOW_CLAIM=1` and `GEAR_MCP_ALLOW_COMMANDS=1` it
+also checks that neither user can claim into, or send a command to, the other's site or device. Those calls only use
+the other user's IDs with made-up serials and command IDs, and must stop at Gear's permission check: run them against
+a development instance.
 
 To build your own integration on the Gear API rather than through an assistant, see the
 [Gear API skill](https://github.com/CloudStudioIoT/gear-api-skill) and the

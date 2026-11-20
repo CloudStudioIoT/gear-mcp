@@ -5,7 +5,11 @@
  *
  * Each user must see only their own client in the six tools, also when they pass the other client's
  * facility, device, endpoint or client ID by hand. Requests of both users go interleaved through one server
- * process, to show that nothing of one request reaches the next. It only reads; it changes nothing in Gear.
+ * process, to show that nothing of one request reaches the next. Without the write variables it only reads.
+ *
+ * With GEAR_MCP_ALLOW_CLAIM=1 and/or GEAR_MCP_ALLOW_COMMANDS=1 it also checks that each user cannot claim into, or send a
+ * command to, the other's facility or device. Those calls only use the other user's IDs and made-up serials and command
+ * IDs: they must fail at the permission check. Run them against a development instance.
  *
  * Not part of `npm test`: it needs two real tokens. Exit code 0 = no leak (read the last line: it says when the check
  * was only partial), 1 = a leak or a failed check, 2 = setup.
@@ -15,6 +19,9 @@ import { AddressInfo } from 'node:net';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { handleHttp } from '../../src/index.js';
+import { writeOptionsFromEnv } from '../../src/tools.js';
+
+const writes = writeOptionsFromEnv();
 
 type Result = { isError?: boolean; text: string; data: unknown };
 interface Sample { facilities: Set<number>; clients: Set<number>; facility: number; client: number; device?: { id: number; name: string }; endpoint?: number }
@@ -107,6 +114,18 @@ async function cross(me: Client, who: string, mine: Sample, other: Sample): Prom
   }
   const facilities = ((await call(me, 'list_facilities')).data ?? []) as { facility_id: number }[];
   check(facilities.every((f) => mine.facilities.has(f.facility_id)), `${who} list_facilities lists only its own`);
+
+  // Write tools, only when the server was started with them. Only foreign IDs are used, so nothing of the caller's
+  // own changes: a claim into the other's facility with a made-up serial and a custom command with a made-up ID.
+  // Both must stop at the permission check; a "Rejected" claim or any command answer means it got past it.
+  if (writes.allowClaim) {
+    const r = await call(me, 'claim_device', { facility_id: other.facility, serial_number: 'ISOLATION-CHECK-0000', claim_code: 'ISOLATION-CHECK' });
+    denied(r, `${who} claim_device(into foreign facility ${other.facility})`);
+  }
+  if (writes.allowCommands && other.device && other.endpoint) {
+    const r = await call(me, 'send_command', { device_id: other.device.id, endpoint_id: other.endpoint, action: 'custom', command_id: 999999999 });
+    denied(r, `${who} send_command(foreign device ${other.device.id}, endpoint ${other.endpoint})`);
+  }
 }
 
 const srv = createServer((req, res) => { void handleHttp(base, req, res); });

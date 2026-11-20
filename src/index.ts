@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Gear MCP server (read-only).
+ * Gear MCP server (read-only unless GEAR_MCP_ALLOW_CLAIM or GEAR_MCP_ALLOW_COMMANDS is set to 1).
  *
  * stdio (Claude Desktop, Claude Code):
  *   GEAR_URL=https://gear.example.com GEAR_TOKEN=<access token> gear-mcp
