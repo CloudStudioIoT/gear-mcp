@@ -5,12 +5,12 @@
   "description": "MCP for Cloud Studio Gear IoT: sites, devices, live values, history, alarms. Read-only by default.",
   "websiteUrl": "https://cloudstudioiot.com",
   "repository": { "url": "https://github.com/CloudStudioIoT/gear-mcp", "source": "github" },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@cloudstudioiot/gear-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         { "name": "GEAR_URL", "description": "URL of your Gear instance, e.g. https://gear.cloud.studio", "isRequired": true, "format": "string" },
