@@ -347,7 +347,7 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: t
 const isoDate = z.string().describe('UTC date, "2026-10-01" or "2026-10-01T08:00:00Z"');
 
 /** Builds an MCP server whose tools all use this Gear client (and so this user's permissions). */
-export function buildServer(gear: GearClient, version = '0.2.0', write: WriteOptions = writeOptionsFromEnv()): McpServer {
+export function buildServer(gear: GearClient, version = '0.2.1', write: WriteOptions = writeOptionsFromEnv()): McpServer {
   const writes = [write.allowClaim ? 'claim_device claims a device into a facility' : '',
     write.allowCommands ? 'send_command switches real equipment' : ''].filter(Boolean);
   const server = new McpServer({ name: 'gear', version }, {
