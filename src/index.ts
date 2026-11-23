@@ -20,7 +20,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { GearClient } from './gear.js';
 import { buildServer } from './tools.js';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const LOGIN_SECONDS = 12 * 3600;
 const MAX_BODY = 1024 * 1024;
 
