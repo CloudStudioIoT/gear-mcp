@@ -1,6 +1,6 @@
 {
   "name": "@cloudstudioiot/gear-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for the Cloud Studio Gear IoT platform: facilities, devices, live values, history and alarms. Read-only by default.",
   "keywords": [
     "mcp",
